@@ -9,15 +9,19 @@ for arch in $ARCHS; do
 	case "$arch" in
 		'amd64')
 			base_image="resin/amd64-debian:jessie"
+			extra_flags=""
 		;;
 		'i386')
 			base_image="resin/i386-debian:jessie"
+			extra_flags="--build=x86_64-pc-linux-gnu --host=i686-pc-linux-gnu"
 		;;
 		'armv7hf')
 			base_image="resin/armv7hf-debian:jessie"
+			extra_flags=""
 		;;
 		'rpi')
 			base_image="resin/rpi-raspbian:jessie"
+			extra_flags=""
 		;;
 	esac
 	dir=glibc-$arch-alpine-$version
@@ -25,7 +29,7 @@ for arch in $ARCHS; do
 	sed -e s~#{BASE_IMAGE}~$base_image~g Dockerfile.tpl > Dockerfile
 
 	docker build -t glibc-builder .
-	docker run --rm -e STDOUT=1 glibc-builder $version /usr/glibc-compat > $dir.tar.gz
+	docker run --rm -e STDOUT=1 -e EXTRA_FLAGS="$extra_flags" glibc-builder $version /usr/glibc-compat > $dir.tar.gz
 
 	sha256sum $dir.tar.gz > $dir.tar.gz.sha256
 
